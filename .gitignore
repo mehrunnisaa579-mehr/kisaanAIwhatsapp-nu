@@ -1,0 +1,33 @@
+# Environments
+.env
+*.env
+backend/.env
+frontend/.env
+
+# Dependencies
+node_modules/
+frontend/node_modules/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Generated Audio Files
+backend/static/audio/
+backend/static/audio/*
+*.mp3
+*.wav
+*.m4a
+
+# Expo / Builds
+.expo/
+dist/
+build/
+android/
+ios/
+
+# OS Files
+.DS_Store
+Thumbs.db
