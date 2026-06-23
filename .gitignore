@@ -56,3 +56,9 @@ tmp/
 temp/
 backend/data/session_memory.json
 session_memory.json
+
+# WhatsApp adapter local secrets/session
+whatsapp-adapter/.env
+whatsapp-adapter/auth_info_baileys/
+whatsapp-adapter/node_modules/
+
