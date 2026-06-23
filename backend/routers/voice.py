@@ -237,9 +237,6 @@ async def voice_analyze(
         if tts_res.get("success"):
             filename = tts_res["filename"]
             base_url = str(request.base_url).rstrip('/')
-            if "localhost" not in base_url and "127.0.0.1" not in base_url and "192.168." not in base_url:
-                if base_url.startswith("http://"):
-                    base_url = "https://" + base_url[7:]
             audio_url = f"{base_url}/static/audio/{filename}"
             tts_success = True
         else:

@@ -9,7 +9,7 @@ import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from routers import health, analyze, weather, tts, voice
+from routers import health, analyze, weather, tts, voice, integration
 
 app = FastAPI(
     title="FarmAI",
@@ -30,11 +30,9 @@ app.include_router(analyze.router)
 app.include_router(weather.router)
 app.include_router(tts.router)
 app.include_router(voice.router)
+app.include_router(integration.router)
 
 # Ensure static directory exists
-import mimetypes
-mimetypes.add_type("audio/wav", ".wav")
-
 STATIC_DIR = backend_dir / "static"
 STATIC_DIR.mkdir(parents=True, exist_ok=True)
 (STATIC_DIR / "audio").mkdir(parents=True, exist_ok=True)

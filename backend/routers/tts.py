@@ -51,9 +51,6 @@ async def text_to_speech(payload: TTSRequest, request: Request):
     # Build absolute public URL dynamically based on request URL
     filename = result["filename"]
     base_url = str(request.base_url).rstrip('/')
-    if "localhost" not in base_url and "127.0.0.1" not in base_url and "192.168." not in base_url:
-        if base_url.startswith("http://"):
-            base_url = "https://" + base_url[7:]
     audio_url = f"{base_url}/static/audio/{filename}"
     
     return {

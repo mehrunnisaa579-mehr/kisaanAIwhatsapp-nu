@@ -19,20 +19,9 @@ import { Audio } from 'expo-av';
 import MultimodalInput from './components/MultimodalInput';
 import WeatherCard from './components/WeatherCard';
 import LoadingSpinner from './components/LoadingSpinner';
-import { analyzeCrop, fetchLiveWeather, generateTTS, voiceAnalyze, normalizeAudioUrl } from './services/api';
+import { analyzeCrop, fetchLiveWeather, generateTTS, voiceAnalyze } from './services/api';
 
 const CHAT_STORAGE_KEY = 'farmai_chat_messages';
-
-const isStaleAudioUrl = (url) => {
-  if (!url) return true;
-  return (
-    url.includes('192.168.') ||
-    url.includes('localhost') ||
-    url.includes('127.0.0.1') ||
-    url.includes(':8000') ||
-    url.startsWith('http://')
-  );
-};
 
 const containsUrdu = (text) => {
   if (!text) return false;
@@ -289,21 +278,14 @@ export default function App() {
 
     try {
       let finalAudioUrl = audioUrl;
-      if (isStaleAudioUrl(finalAudioUrl)) {
-        console.log("Stale or missing audio URL detected. Calling generateTTS for text:", text, "hint:", languageHint);
+      if (!finalAudioUrl) {
+        console.log("Calling generateTTS for text:", text, "hint:", languageHint);
         const res = await generateTTS(text, languageHint);
         console.log("TTS URL received:", res.audio_url);
         finalAudioUrl = res.audio_url;
       } else {
         console.log("Reusing pre-generated audio URL:", finalAudioUrl);
       }
-
-      await Audio.setAudioModeAsync({
-        allowsRecordingIOS: false,
-        playsInSilentModeIOS: true,
-        shouldRouteThroughEarpieceAndroid: false,
-        staysActiveInBackground: false,
-      }).catch(e => console.log("Error setting audio mode:", e));
 
       const { sound } = await Audio.Sound.createAsync(
         { uri: finalAudioUrl },
@@ -404,14 +386,7 @@ export default function App() {
         if (saved) {
           const parsed = JSON.parse(saved);
           if (Array.isArray(parsed)) {
-            const sanitized = parsed.map(msg => {
-              if (msg.audioUrl && isStaleAudioUrl(msg.audioUrl)) {
-                const { audioUrl, ...rest } = msg;
-                return rest;
-              }
-              return msg;
-            });
-            setChatMessages(sanitized);
+            setChatMessages(parsed);
           }
         }
       } catch (e) {
@@ -563,7 +538,7 @@ export default function App() {
       }, 200);
 
       // Auto-play the returned audio if voice input and audio url is available
-      if (isVoice && result?.audio_url && !isStaleAudioUrl(result.audio_url)) {
+      if (isVoice && result?.audio_url) {
         console.log("Auto-playing voice response...", result.audio_url);
         setTimeout(async () => {
           try {
@@ -572,13 +547,6 @@ export default function App() {
               await soundRef.current.unloadAsync().catch(() => {});
               soundRef.current = null;
             }
-
-            await Audio.setAudioModeAsync({
-              allowsRecordingIOS: false,
-              playsInSilentModeIOS: true,
-              shouldRouteThroughEarpieceAndroid: false,
-              staysActiveInBackground: false,
-            }).catch(e => console.log("Error setting audio mode:", e));
 
             const { sound } = await Audio.Sound.createAsync(
               { uri: result.audio_url },

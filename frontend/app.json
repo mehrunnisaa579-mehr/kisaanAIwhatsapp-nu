@@ -21,13 +21,19 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/icon.png",
         "backgroundColor": "#1a7a2e"
-      }
+      },
+      "package": "com.agrominds.farmai"
     },
     "web": {
       "favicon": "./assets/icon.png"
     },
     "plugins": [
       "expo-asset"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "7b37c7a4-814d-4772-afaf-8583f013ab94"
+      }
+    }
   }
 }

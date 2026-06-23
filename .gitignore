@@ -31,3 +31,28 @@ ios/
 # OS Files
 .DS_Store
 Thumbs.db
+
+# Additional safe ignore rules
+.env.*
+!.env.example
+backend/.env.*
+!backend/.env.example
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+env/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+backend/static/uploads/
+static/uploads/
+static/audio/
+*.ogg
+*.webm
+*.log
+tmp/
+temp/
+backend/data/session_memory.json
+session_memory.json

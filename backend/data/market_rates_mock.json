@@ -1,0 +1,322 @@
+{
+  "source": "local_mock",
+  "last_updated": "mock-data",
+  "unit": "Rs/100kg",
+  "rates": [
+    {
+      "commodity": "wheat",
+      "city": "Multan",
+      "min_rate": 9000,
+      "max_rate": 9400,
+      "avg_rate": 9200
+    },
+    {
+      "commodity": "wheat",
+      "city": "Khanewal",
+      "min_rate": 8900,
+      "max_rate": 9300,
+      "avg_rate": 9100
+    },
+    {
+      "commodity": "wheat",
+      "city": "Bahawalpur",
+      "min_rate": 9100,
+      "max_rate": 9500,
+      "avg_rate": 9300
+    },
+    {
+      "commodity": "wheat",
+      "city": "Lahore",
+      "min_rate": 9200,
+      "max_rate": 9600,
+      "avg_rate": 9400
+    },
+    {
+      "commodity": "wheat",
+      "city": "Faisalabad",
+      "min_rate": 9050,
+      "max_rate": 9450,
+      "avg_rate": 9250
+    },
+    {
+      "commodity": "cotton",
+      "city": "Multan",
+      "min_rate": 20000,
+      "max_rate": 22000,
+      "avg_rate": 21000
+    },
+    {
+      "commodity": "cotton",
+      "city": "Khanewal",
+      "min_rate": 19500,
+      "max_rate": 21500,
+      "avg_rate": 20500
+    },
+    {
+      "commodity": "cotton",
+      "city": "Sahiwal",
+      "min_rate": 20500,
+      "max_rate": 22500,
+      "avg_rate": 21500
+    },
+    {
+      "commodity": "seed_cotton",
+      "city": "Multan",
+      "min_rate": 7800,
+      "max_rate": 8400,
+      "avg_rate": 8100
+    },
+    {
+      "commodity": "seed_cotton",
+      "city": "Khanewal",
+      "min_rate": 7700,
+      "max_rate": 8300,
+      "avg_rate": 8000
+    },
+    {
+      "commodity": "seed_cotton",
+      "city": "Bahawalpur",
+      "min_rate": 7900,
+      "max_rate": 8500,
+      "avg_rate": 8200
+    },
+    {
+      "commodity": "seed_cotton",
+      "city": "Vehari",
+      "min_rate": 8000,
+      "max_rate": 8600,
+      "avg_rate": 8300
+    },
+    {
+      "commodity": "mango",
+      "city": "Multan",
+      "min_rate": 12000,
+      "max_rate": 15000,
+      "avg_rate": 13500
+    },
+    {
+      "commodity": "mango",
+      "city": "Lahore",
+      "min_rate": 14000,
+      "max_rate": 17000,
+      "avg_rate": 15500
+    },
+    {
+      "commodity": "mango",
+      "city": "Rawalpindi",
+      "min_rate": 15000,
+      "max_rate": 18000,
+      "avg_rate": 16500
+    },
+    {
+      "commodity": "potato_fresh",
+      "city": "Lahore",
+      "min_rate": 4500,
+      "max_rate": 5200,
+      "avg_rate": 4850
+    },
+    {
+      "commodity": "potato_fresh",
+      "city": "Okara",
+      "min_rate": 4200,
+      "max_rate": 4800,
+      "avg_rate": 4500
+    },
+    {
+      "commodity": "potato_fresh",
+      "city": "Faisalabad",
+      "min_rate": 4400,
+      "max_rate": 5000,
+      "avg_rate": 4700
+    },
+    {
+      "commodity": "potato_fresh",
+      "city": "Sahiwal",
+      "min_rate": 4300,
+      "max_rate": 4900,
+      "avg_rate": 4600
+    },
+    {
+      "commodity": "onion",
+      "city": "Lahore",
+      "min_rate": 6200,
+      "max_rate": 7000,
+      "avg_rate": 6600
+    },
+    {
+      "commodity": "onion",
+      "city": "Multan",
+      "min_rate": 5800,
+      "max_rate": 6500,
+      "avg_rate": 6150
+    },
+    {
+      "commodity": "onion",
+      "city": "Faisalabad",
+      "min_rate": 6000,
+      "max_rate": 6800,
+      "avg_rate": 6400
+    },
+    {
+      "commodity": "onion",
+      "city": "Sargodha",
+      "min_rate": 5900,
+      "max_rate": 6700,
+      "avg_rate": 6300
+    },
+    {
+      "commodity": "tomato",
+      "city": "Lahore",
+      "min_rate": 7500,
+      "max_rate": 8500,
+      "avg_rate": 8000
+    },
+    {
+      "commodity": "tomato",
+      "city": "Multan",
+      "min_rate": 7000,
+      "max_rate": 7800,
+      "avg_rate": 7400
+    },
+    {
+      "commodity": "tomato",
+      "city": "Faisalabad",
+      "min_rate": 7200,
+      "max_rate": 8100,
+      "avg_rate": 7650
+    },
+    {
+      "commodity": "tomato",
+      "city": "Rawalpindi",
+      "min_rate": 8000,
+      "max_rate": 9000,
+      "avg_rate": 8500
+    },
+    {
+      "commodity": "garlic",
+      "city": "Lahore",
+      "min_rate": 28000,
+      "max_rate": 32000,
+      "avg_rate": 30000
+    },
+    {
+      "commodity": "garlic",
+      "city": "Multan",
+      "min_rate": 26000,
+      "max_rate": 30000,
+      "avg_rate": 28000
+    },
+    {
+      "commodity": "ginger",
+      "city": "Lahore",
+      "min_rate": 48000,
+      "max_rate": 54000,
+      "avg_rate": 51000
+    },
+    {
+      "commodity": "ginger",
+      "city": "Rawalpindi",
+      "min_rate": 50000,
+      "max_rate": 56000,
+      "avg_rate": 53000
+    },
+    {
+      "commodity": "green_chilli",
+      "city": "Lahore",
+      "min_rate": 9000,
+      "max_rate": 11000,
+      "avg_rate": 10000
+    },
+    {
+      "commodity": "green_chilli",
+      "city": "Multan",
+      "min_rate": 8000,
+      "max_rate": 10000,
+      "avg_rate": 9000
+    },
+    {
+      "commodity": "rice_irri",
+      "city": "Lahore",
+      "min_rate": 11500,
+      "max_rate": 12500,
+      "avg_rate": 12000
+    },
+    {
+      "commodity": "rice_irri",
+      "city": "Multan",
+      "min_rate": 11000,
+      "max_rate": 12000,
+      "avg_rate": 11500
+    },
+    {
+      "commodity": "rice_basmati",
+      "city": "Lahore",
+      "min_rate": 19000,
+      "max_rate": 22000,
+      "avg_rate": 20500
+    },
+    {
+      "commodity": "rice_basmati",
+      "city": "Faisalabad",
+      "min_rate": 18500,
+      "max_rate": 21000,
+      "avg_rate": 19750
+    },
+    {
+      "commodity": "rice_basmati",
+      "city": "Okara",
+      "min_rate": 18000,
+      "max_rate": 20500,
+      "avg_rate": 19250
+    },
+    {
+      "commodity": "maize",
+      "city": "Sahiwal",
+      "min_rate": 5200,
+      "max_rate": 5800,
+      "avg_rate": 5500
+    },
+    {
+      "commodity": "maize",
+      "city": "Okara",
+      "min_rate": 5100,
+      "max_rate": 5700,
+      "avg_rate": 5400
+    },
+    {
+      "commodity": "maize",
+      "city": "Faisalabad",
+      "min_rate": 5000,
+      "max_rate": 5600,
+      "avg_rate": 5300
+    },
+    {
+      "commodity": "sugarcane",
+      "city": "Faisalabad",
+      "min_rate": 1050,
+      "max_rate": 1150,
+      "avg_rate": 1100
+    },
+    {
+      "commodity": "sugarcane",
+      "city": "Sargodha",
+      "min_rate": 1000,
+      "max_rate": 1100,
+      "avg_rate": 1050
+    },
+    {
+      "commodity": "okra",
+      "city": "Lahore",
+      "min_rate": 6500,
+      "max_rate": 7500,
+      "avg_rate": 7000
+    },
+    {
+      "commodity": "okra",
+      "city": "Multan",
+      "min_rate": 6000,
+      "max_rate": 7000,
+      "avg_rate": 6500
+    }
+  ]
+}

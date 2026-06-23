@@ -1,0 +1,204 @@
+{
+  "commodities": [
+    {
+      "canonical": "wheat",
+      "display_name": "Wheat / گندم",
+      "aliases": ["wheat", "gandum", "gandhum", "gandham", "گندم", "کنک", "kanak"]
+    },
+    {
+      "canonical": "cotton",
+      "display_name": "Cotton / کپاس",
+      "aliases": ["cotton", "kapas", "kapaas", "کپاس"]
+    },
+    {
+      "canonical": "seed_cotton",
+      "display_name": "Seed Cotton / پھٹی",
+      "aliases": ["seed cotton", "phutti", "phuti", "پھٹی", "پھٹی کپاس"]
+    },
+    {
+      "canonical": "mango",
+      "display_name": "Mango / آم",
+      "aliases": ["mango", "aam", "آم"]
+    },
+    {
+      "canonical": "potato_fresh",
+      "display_name": "Fresh Potato / آلو تازہ",
+      "aliases": ["potato fresh", "fresh potato", "aloo", "aaloo", "aloo taza", "آلو", "آلو تازہ"]
+    },
+    {
+      "canonical": "potato_store",
+      "display_name": "Store Potato / آلو کولڈ اسٹور",
+      "aliases": ["potato store", "store potato", "aloo store", "aaloo store", "آلو اسٹور", "کولڈ اسٹور آلو"]
+    },
+    {
+      "canonical": "onion",
+      "display_name": "Onion / پیاز",
+      "aliases": ["onion", "pyaz", "pyaaz", "پیاز", "گندھا"]
+    },
+    {
+      "canonical": "tomato",
+      "display_name": "Tomato / ٹماٹر",
+      "aliases": ["tomato", "tamatar", "ٹماٹر"]
+    },
+    {
+      "canonical": "garlic",
+      "display_name": "Garlic / لہسن",
+      "aliases": ["garlic", "lehsen", "lehson", "lahsan", "لہسن", "تھوم", "thoom"]
+    },
+    {
+      "canonical": "ginger",
+      "display_name": "Ginger / ادرک",
+      "aliases": ["ginger", "adrak", "ادرک"]
+    },
+    {
+      "canonical": "green_chilli",
+      "display_name": "Green Chilli / ہری مرچ",
+      "aliases": ["green chilli", "hari mirch", "sabz mirch", "ہری مرچ", "سبز مرچ"]
+    },
+    {
+      "canonical": "red_chilli",
+      "display_name": "Red Chilli / سرخ مرچ",
+      "aliases": ["red chilli", "surkh mirch", "lal mirch", "سرخ مرچ", "لال مرچ"]
+    },
+    {
+      "canonical": "rice_irri",
+      "display_name": "Rice Irri / چاول اری",
+      "aliases": ["rice irri", "irri rice", "chawal irri", "چاول اری"]
+    },
+    {
+      "canonical": "rice_basmati",
+      "display_name": "Rice Basmati / چاول باسمتی",
+      "aliases": ["rice basmati", "basmati rice", "basmati", "chawal basmati", "باسمتی", "چاول باسمتی"]
+    },
+    {
+      "canonical": "maize",
+      "display_name": "Maize / مکئی",
+      "aliases": ["maize", "corn", "makai", "maki", "مکئی"]
+    },
+    {
+      "canonical": "sugarcane",
+      "display_name": "Sugarcane / گنا",
+      "aliases": ["sugarcane", "ganna", "کماند", "گنا"]
+    },
+    {
+      "canonical": "gram",
+      "display_name": "Gram / چنا",
+      "aliases": ["gram", "chana", "channa", "چنا"]
+    },
+    {
+      "canonical": "lentil",
+      "display_name": "Lentil / مسور",
+      "aliases": ["lentil", "masoor", "dhal masoor", "مسور", "دال مسور"]
+    },
+    {
+      "canonical": "mung",
+      "display_name": "Mung Bean / مونگ",
+      "aliases": ["mung", "mong", "dhal mong", "مونگ", "دال مونگ"]
+    },
+    {
+      "canonical": "mash",
+      "display_name": "Mash Bean / ماش",
+      "aliases": ["mash", "maash", "dhal maash", "ماش", "دال ماش"]
+    },
+    {
+      "canonical": "sesame",
+      "display_name": "Sesame / تل",
+      "aliases": ["sesame", "til", "تل"]
+    },
+    {
+      "canonical": "mustard",
+      "display_name": "Mustard / سرسوں",
+      "aliases": ["mustard", "sarson", "سرسوں"]
+    },
+    {
+      "canonical": "rapeseed",
+      "display_name": "Rapeseed / رایا",
+      "aliases": ["rapeseed", "raya", "رایا"]
+    },
+    {
+      "canonical": "banana",
+      "display_name": "Banana / کیلا",
+      "aliases": ["banana", "kela", "کیلا"]
+    },
+    {
+      "canonical": "apple",
+      "display_name": "Apple / سیب",
+      "aliases": ["apple", "seb", "سیب"]
+    },
+    {
+      "canonical": "guava",
+      "display_name": "Guava / امرود",
+      "aliases": ["guava", "amrood", "امرود"]
+    },
+    {
+      "canonical": "pomegranate",
+      "display_name": "Pomegranate / انار",
+      "aliases": ["pomegranate", "anar", "انار"]
+    },
+    {
+      "canonical": "dates",
+      "display_name": "Dates / کھجور",
+      "aliases": ["dates", "khajoor", "کھجور"]
+    },
+    {
+      "canonical": "citrus_kinnow",
+      "display_name": "Citrus / مالٹا",
+      "aliases": ["citrus", "kinnow", "kino", "malta", "مالٹا", "کنو"]
+    },
+    {
+      "canonical": "lemon",
+      "display_name": "Lemon / لیموں",
+      "aliases": ["lemon", "leemo", "limo", "لیموں"]
+    },
+    {
+      "canonical": "cucumber",
+      "display_name": "Cucumber / کھیرا",
+      "aliases": ["cucumber", "kheera", "کھیرا"]
+    },
+    {
+      "canonical": "brinjal",
+      "display_name": "Brinjal / بینگن",
+      "aliases": ["brinjal", "eggplant", "baingan", "bengan", "بینگن"]
+    },
+    {
+      "canonical": "okra",
+      "display_name": "Okra / بھنڈی",
+      "aliases": ["okra", "lady finger", "bhindi", "بھنڈی"]
+    },
+    {
+      "canonical": "pumpkin",
+      "display_name": "Pumpkin / کدو",
+      "aliases": ["pumpkin", "kaddu", "halwa kaddu", "کدو"]
+    },
+    {
+      "canonical": "spinach",
+      "display_name": "Spinach / پالک",
+      "aliases": ["spinach", "palak", "پالک"]
+    },
+    {
+      "canonical": "radish",
+      "display_name": "Radish / مولی",
+      "aliases": ["radish", "mooli", "مولی"]
+    },
+    {
+      "canonical": "carrot",
+      "display_name": "Carrot / گاجر",
+      "aliases": ["carrot", "gajar", "گاجر"]
+    },
+    {
+      "canonical": "cauliflower",
+      "display_name": "Cauliflower / پھول گوبھی",
+      "aliases": ["cauliflower", "phool gobhi", "پھول گوبھی"]
+    },
+    {
+      "canonical": "cabbage",
+      "display_name": "Cabbage / بند گوبھی",
+      "aliases": ["cabbage", "band gobhi", "بند گوبھی"]
+    },
+    {
+      "canonical": "peas",
+      "display_name": "Peas / مٹر",
+      "aliases": ["peas", "matar", "مٹر"]
+    }
+  ]
+}

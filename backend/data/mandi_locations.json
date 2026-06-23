@@ -1,0 +1,142 @@
+[
+  {
+    "name": "Multan",
+    "district": "Multan",
+    "province": "Punjab",
+    "lat": 30.1575,
+    "lon": 71.5249
+  },
+  {
+    "name": "Khanewal",
+    "district": "Khanewal",
+    "province": "Punjab",
+    "lat": 30.3017,
+    "lon": 71.9321
+  },
+  {
+    "name": "Bahawalpur",
+    "district": "Bahawalpur",
+    "province": "Punjab",
+    "lat": 29.3544,
+    "lon": 71.6911
+  },
+  {
+    "name": "Lodhran",
+    "district": "Lodhran",
+    "province": "Punjab",
+    "lat": 29.5333,
+    "lon": 71.6333
+  },
+  {
+    "name": "Vehari",
+    "district": "Vehari",
+    "province": "Punjab",
+    "lat": 30.0419,
+    "lon": 72.3528
+  },
+  {
+    "name": "Muzaffargarh",
+    "district": "Muzaffargarh",
+    "province": "Punjab",
+    "lat": 30.0754,
+    "lon": 71.1921
+  },
+  {
+    "name": "Dera Ghazi Khan",
+    "district": "Dera Ghazi Khan",
+    "province": "Punjab",
+    "lat": 30.0561,
+    "lon": 70.6348
+  },
+  {
+    "name": "Faisalabad",
+    "district": "Faisalabad",
+    "province": "Punjab",
+    "lat": 31.4504,
+    "lon": 73.1350
+  },
+  {
+    "name": "Lahore",
+    "district": "Lahore",
+    "province": "Punjab",
+    "lat": 31.5204,
+    "lon": 74.3587
+  },
+  {
+    "name": "Sahiwal",
+    "district": "Sahiwal",
+    "province": "Punjab",
+    "lat": 30.6682,
+    "lon": 73.1114
+  },
+  {
+    "name": "Rahim Yar Khan",
+    "district": "Rahim Yar Khan",
+    "province": "Punjab",
+    "lat": 28.4212,
+    "lon": 70.2989
+  },
+  {
+    "name": "Okara",
+    "district": "Okara",
+    "province": "Punjab",
+    "lat": 30.8014,
+    "lon": 73.4489
+  },
+  {
+    "name": "Sargodha",
+    "district": "Sargodha",
+    "province": "Punjab",
+    "lat": 32.0740,
+    "lon": 72.6861
+  },
+  {
+    "name": "Gujranwala",
+    "district": "Gujranwala",
+    "province": "Punjab",
+    "lat": 32.1617,
+    "lon": 74.1883
+  },
+  {
+    "name": "Rawalpindi",
+    "district": "Rawalpindi",
+    "province": "Punjab",
+    "lat": 33.5997,
+    "lon": 73.0441
+  },
+  {
+    "name": "Gujrat",
+    "district": "Gujrat",
+    "province": "Punjab",
+    "lat": 32.5736,
+    "lon": 74.0789
+  },
+  {
+    "name": "Kasur",
+    "district": "Kasur",
+    "province": "Punjab",
+    "lat": 31.1167,
+    "lon": 74.4500
+  },
+  {
+    "name": "Jhang",
+    "district": "Jhang",
+    "province": "Punjab",
+    "lat": 31.2781,
+    "lon": 72.3117
+  },
+  {
+    "name": "Chiniot",
+    "district": "Chiniot",
+    "province": "Punjab",
+    "lat": 31.7200,
+    "lon": 72.9789
+  },
+  {
+    "name": "Toba Tek Singh",
+    "district": "Toba Tek Singh",
+    "province": "Punjab",
+    "lat": 30.9742,
+    "lon": 72.4828
+  }
+]

@@ -5,30 +5,9 @@
 // or use an ngrok URL.
 // Example: const BASE_URL = 'http://192.168.1.100:8000';
 
-const BASE_URL = 'https://kissaanai-2-45iy.onrender.com';
+const BASE_URL = 'https://kissanai-2-451y.onrender.com';
 const API_URL = `${BASE_URL}/analyze`;
 const TIMEOUT_MS = 60000; // 60 seconds
-
-export function normalizeAudioUrl(url) {
-  if (!url) return null;
-  if (url.startsWith('/')) {
-    return `${BASE_URL}${url}`;
-  }
-  if (url.startsWith('http://kissaanai-2-45iy.onrender.com')) {
-    return url.replace('http://', 'https://');
-  }
-  return url;
-}
-
-async function safeParseJson(response, defaultErrorMessage) {
-  const text = await response.text();
-  try {
-    return JSON.parse(text);
-  } catch (err) {
-    console.log("JSON parsing failed. Raw response text:", text);
-    throw new Error(defaultErrorMessage || `سرور کی طرف سے نامکمل جواب موصول ہوا (${response.status})`);
-  }
-}
 
 export async function analyzeCrop({ text, crop, latitude, longitude, image }) {
   console.log("Sending request to backend...", API_URL);
@@ -81,7 +60,7 @@ export async function analyzeCrop({ text, crop, latitude, longitude, image }) {
 
     clearTimeout(timeoutId);
 
-    const data = await safeParseJson(response, "سرور سے رابطہ قائم نہیں ہو سکا۔ دوبارہ کوشش کریں۔");
+    const data = await response.json();
     console.log("Response received");
 
     if (!response.ok) {
@@ -107,10 +86,10 @@ export async function fetchLiveWeather(latitude, longitude) {
   console.log("Fetching live weather from:", url);
   try {
     const response = await fetch(url);
-    const data = await safeParseJson(response, "موسم کی معلومات حاصل کرنے میں مسئلہ آ رہا ہے۔");
     if (!response.ok) {
-      throw new Error(data?.detail || `Weather fetch failed (${response.status})`);
+      throw new Error(`Weather fetch failed (${response.status})`);
     }
+    const data = await response.json();
     console.log("Live weather data received:", data);
     return data;
   } catch (error) {
@@ -135,12 +114,9 @@ export async function generateTTS(text, languageHint = null) {
       }),
     });
 
-    const data = await safeParseJson(response, "آواز بنانے میں مسئلہ آ رہا ہے، دوبارہ کوشش کریں۔");
+    const data = await response.json();
     if (!response.ok || data.status === 'error') {
       throw new Error(data.message || `TTS failed (${response.status})`);
-    }
-    if (data.audio_url) {
-      data.audio_url = normalizeAudioUrl(data.audio_url);
     }
     return data;
   } catch (error) {
@@ -197,14 +173,11 @@ export async function voiceAnalyze({ audioUri, latitude, longitude, languageHint
     });
 
     clearTimeout(timeoutId);
-    const data = await safeParseJson(response, "آواز سمجھنے میں مسئلہ آ رہا ہے۔ دوبارہ کوشش کریں۔");
+    const data = await response.json();
     console.log("Voice Response received", data?.status);
 
     if (!response.ok) {
       throw new Error(data?.detail || `Server error (${response.status})`);
-    }
-    if (data.audio_url) {
-      data.audio_url = normalizeAudioUrl(data.audio_url);
     }
     return data;
   } catch (error) {
