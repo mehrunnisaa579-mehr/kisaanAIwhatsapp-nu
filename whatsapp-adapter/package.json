@@ -10,6 +10,7 @@
     "@whiskeysockets/baileys": "latest",
     "axios": "latest",
     "dotenv": "latest",
+    "form-data": "latest",
     "qrcode-terminal": "latest"
   }
 }

@@ -1,5 +1,6 @@
+const { downloadMediaMessage } = require('@whiskeysockets/baileys');
 const { jidToUserId, extractTextMessage, getMessageKey } = require('./utils');
-const { sendTextToBackend } = require('./backendClient');
+const { sendTextToBackend, sendImageToBackend } = require('./backendClient');
 
 // In-memory cache of processed messages: messageKey -> timestamp
 const processedMessageIds = new Map();
@@ -44,10 +45,12 @@ async function handleIncomingMessage(sock, msg) {
       return;
     }
 
-    // 4. Extract and validate text
-    const text = extractTextMessage(msg.message);
-    if (!text || !text.trim()) {
-      // Ignore empty or media messages
+    // Identify if the message contains valid text or an image
+    const isText = !!(extractTextMessage(msg.message));
+    const isImage = !!(msg.message?.imageMessage);
+
+    // Ignore unsupported messages (like sticker, audio, video, document, location for now)
+    if (!isText && !isImage) {
       return;
     }
 
@@ -62,37 +65,92 @@ async function handleIncomingMessage(sock, msg) {
       return;
     }
 
-    // Mark as processed BEFORE calling backend to handle simultaneous duplicates
+    // Mark as processed BEFORE calling backend / downloading media to handle simultaneous duplicates
     processedMessageIds.set(messageKey, Date.now());
-
-    console.log(`[WA] text message received ${msg.key.id}`);
 
     // 5. Map JID to backend user_id
     const userId = jidToUserId(jid);
 
-    // 6. Send request to backend
-    const result = await sendTextToBackend({ userId, text });
+    if (isImage) {
+      console.log(`[WA] image message received ${msg.key.id}`);
 
-    if (!result.success) {
-      // If request failed (e.g. timeout or down)
-      let fallbackText = 'FarmAI backend abhi available nahi hai. Thori der baad dobara try karein.';
-      
-      if (result.error && (result.error.code === 'ECONNABORTED' || result.error.message.includes('timeout'))) {
-        fallbackText = 'Jawab banne mein zyada waqt lag raha hai. Thori der baad dobara try karein.';
+      try {
+        // Download image media buffer using Baileys helper
+        const buffer = await downloadMediaMessage(
+          msg,
+          'buffer',
+          {}
+        );
+
+        if (!buffer) {
+          throw new Error('Downloaded buffer is empty or null');
+        }
+
+        const imageMsg = msg.message.imageMessage;
+        const mimeType = imageMsg.mimetype || 'image/jpeg';
+        const caption = imageMsg.caption || '';
+
+        // Call the backend with the buffer
+        const result = await sendImageToBackend({
+          userId,
+          imageBuffer: buffer,
+          filename: `whatsapp_image_${msg.key.id}.jpg`,
+          mimeType,
+          caption
+        });
+
+        if (!result.success) {
+          let fallbackText = 'FarmAI backend abhi available nahi hai. Thori der baad dobara try karein.';
+          if (result.error && (result.error.code === 'ECONNABORTED' || result.error.message.includes('timeout'))) {
+            fallbackText = 'Tasveer analyze karne mein zyada waqt lag raha hai. Thori der baad dobara try karein.';
+          }
+          await sock.sendMessage(jid, { text: fallbackText });
+          return;
+        }
+
+        console.log('[WA] backend response received');
+
+        const responseData = result.data;
+        if (responseData && responseData.status === 'success' && responseData.farmer_response) {
+          await sock.sendMessage(jid, { text: responseData.farmer_response });
+        } else {
+          await sock.sendMessage(jid, { text: 'معذرت، تصویر کا جواب تیار نہیں ہو سکا۔ دوبارہ کوشش کریں۔' });
+        }
+
+      } catch (mediaErr) {
+        console.error('[WA] Error downloading or processing image:', mediaErr.message);
+        await sock.sendMessage(jid, { text: 'معذرت، تصویر حاصل کرنے یا جواب بنانے میں مسئلہ پیش آیا۔ دوبارہ کوشش کریں۔' });
       }
-      
-      await sock.sendMessage(jid, { text: fallbackText });
-      return;
-    }
 
-    console.log('[WA] backend response received');
-
-    // 7. Send backend farmer_response back to the same WhatsApp chat
-    const responseData = result.data;
-    if (responseData && responseData.status === 'success' && responseData.farmer_response) {
-      await sock.sendMessage(jid, { text: responseData.farmer_response });
     } else {
-      await sock.sendMessage(jid, { text: 'معذرت، ابھی جواب تیار نہیں ہو سکا۔ دوبارہ کوشش کریں۔' });
+      // Text flow
+      console.log(`[WA] text message received ${msg.key.id}`);
+      const text = extractTextMessage(msg.message);
+
+      // 6. Send request to backend
+      const result = await sendTextToBackend({ userId, text });
+
+      if (!result.success) {
+        // If request failed (e.g. timeout or down)
+        let fallbackText = 'FarmAI backend abhi available nahi hai. Thori der baad dobara try karein.';
+        
+        if (result.error && (result.error.code === 'ECONNABORTED' || result.error.message.includes('timeout'))) {
+          fallbackText = 'Jawab banne mein zyada waqt lag raha hai. Thori der baad dobara try karein.';
+        }
+        
+        await sock.sendMessage(jid, { text: fallbackText });
+        return;
+      }
+
+      console.log('[WA] backend response received');
+
+      // 7. Send backend farmer_response back to the same WhatsApp chat
+      const responseData = result.data;
+      if (responseData && responseData.status === 'success' && responseData.farmer_response) {
+        await sock.sendMessage(jid, { text: responseData.farmer_response });
+      } else {
+        await sock.sendMessage(jid, { text: 'معذرت، ابھی جواب تیار نہیں ہو سکا۔ دوبارہ کوشش کریں۔' });
+      }
     }
 
   } catch (err) {
@@ -103,4 +161,5 @@ async function handleIncomingMessage(sock, msg) {
 module.exports = {
   handleIncomingMessage
 };
+
 

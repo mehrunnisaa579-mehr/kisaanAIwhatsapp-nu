@@ -61,4 +61,6 @@ session_memory.json
 whatsapp-adapter/.env
 whatsapp-adapter/auth_info_baileys/
 whatsapp-adapter/node_modules/
+whatsapp-adapter/temp/
+
 
