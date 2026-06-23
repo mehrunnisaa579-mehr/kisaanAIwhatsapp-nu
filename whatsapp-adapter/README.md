@@ -6,6 +6,7 @@ This directory contains a separate Node.js adapter skeleton for linking WhatsApp
 
 - **Phase 1: Text-Message Flow**: Routes text queries to the FarmAI `/integration/process` API endpoint.
 - **Phase 2: Image-Only Flow**: Routes image uploads directly to the FarmAI `/integration/process-upload` API endpoint as `multipart/form-data`.
+- **Phase 3: Voice Note / Audio Flow**: Routes audio uploads directly to the FarmAI `/integration/process-upload` API endpoint as `multipart/form-data`.
 
 ---
 
@@ -40,7 +41,7 @@ This directory contains a separate Node.js adapter skeleton for linking WhatsApp
 
 ## Manual Verification Tests
 
-Once connected, verify the text-message and image flows with the following test scenarios:
+Once connected, verify the text, image, and voice message flows with the following test scenarios:
 
 ### Test Case 1: Crop Disease Advisory (Text)
 * **Action**: Send the message:
@@ -60,9 +61,18 @@ Once connected, verify the text-message and image flows with the following test 
 * **Action**: Send a crop leaf image (optionally with or without a caption).
 * **Expected Response**: FarmAI crop disease analysis and diagnosis text response.
 
-### Test Case 4: Offline/Down Backend Fallback
-* **Action**: Temporarily stop the backend or set an invalid `BACKEND_BASE_URL` in `.env`, restart the adapter, and send any text or image.
+### Test Case 4: Crop Advisory (Voice Note)
+* **Action**: Send a WhatsApp voice note saying:
+  ```text
+  meri cotton ke patte peele ho rahe hain
+  ```
+* **Expected Response**: FarmAI transcribes the audio, runs the query, and replies with a text response.
+
+### Test Case 5: Offline/Down Backend Fallback
+* **Action**: Temporarily stop the backend or set an invalid `BACKEND_BASE_URL` in `.env`, restart the adapter, and send any text, image, or voice note.
 * **Expected Response**:
   - For text: `FarmAI backend abhi available nahi hai. Thori der baad dobara try karein.`
-  - For image: `FarmAI backend abhi available nahi hai. Thori der baad dobara try karein.` (or timeout message if it aborts).
+  - For image: `FarmAI backend abhi available nahi hai. Thori der baad dobara try karein.` (or timeout message).
+  - For voice note: `FarmAI backend abhi available nahi hai. Thori der baad dobara try karein.` (or timeout message).
+
 

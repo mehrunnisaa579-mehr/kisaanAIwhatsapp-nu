@@ -86,8 +86,55 @@ async function sendImageToBackend({ userId, imageBuffer, filename, mimeType, cap
   }
 }
 
+/**
+ * Sends an audio file buffer (voice note) to the FarmAI FastAPI backend.
+ * 
+ * @param {object} params
+ * @param {string} params.userId - Phone number (JID without domain)
+ * @param {Buffer} params.audioBuffer - The audio file buffer downloaded from WhatsApp
+ * @param {string} [params.filename] - Filename for the audio upload (defaults to voice.ogg)
+ * @param {string} [params.mimeType] - MIME type of the audio file (defaults to audio/ogg)
+ * @returns {Promise<object>} Structured response object indicating success or failure
+ */
+async function sendAudioToBackend({ userId, audioBuffer, filename, mimeType }) {
+  const baseUrl = process.env.BACKEND_BASE_URL || 'https://kisaanaiwhatsapp-nu.onrender.com';
+  const source = process.env.SOURCE_NAME || 'whatsapp_baileys';
+
+  const form = new FormData();
+  form.append('user_id', userId);
+  form.append('source', source);
+  form.append('message_type', 'audio');
+  form.append('crop', '');
+
+  // Append audio buffer using the field name 'audio'
+  form.append('audio', audioBuffer, {
+    filename: filename || 'voice.ogg',
+    contentType: mimeType || 'audio/ogg'
+  });
+
+  try {
+    const response = await axios.post(`${baseUrl}/integration/process-upload`, form, {
+      headers: form.getHeaders(),
+      timeout: 120000 // 120 seconds timeout for STT + AI response
+    });
+
+    return {
+      success: true,
+      data: response.data
+    };
+  } catch (error) {
+    console.error('[WA] backend error:', error.message);
+    return {
+      success: false,
+      error: error
+    };
+  }
+}
+
 module.exports = {
   sendTextToBackend,
-  sendImageToBackend
+  sendImageToBackend,
+  sendAudioToBackend
 };
+
 
