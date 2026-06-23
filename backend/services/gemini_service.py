@@ -217,6 +217,64 @@ def clean_and_shorten_section(text: str, max_sentences: int) -> str:
     return joined
 
 
+def enforce_short_complete_tts_summary(summary: str, lang: str) -> str:
+    if not summary:
+        return _get_fallback_summary(lang)
+        
+    # Split into sentences using full-stop boundaries (۔ for Urdu, . for English/Roman Urdu, plus ! and ?)
+    sentences = re.split(r'([۔\n!\?]|\.(?!\d))', summary)
+    
+    reconstructed_sentences = []
+    i = 0
+    while i < len(sentences):
+        s = sentences[i].strip()
+        sep = ""
+        if i + 1 < len(sentences):
+            sep = sentences[i+1].strip()
+        
+        if s or sep:
+            full_sent = f"{s}{sep}".strip()
+            if len(full_sent) > 1:
+                reconstructed_sentences.append(full_sent)
+        i += 2
+        
+    clean_sents = [s for s in reconstructed_sentences if len(s.strip()) > 3]
+    
+    if not clean_sents:
+        return _get_fallback_summary(lang)
+        
+    # Keep max 3 sentences initially
+    selected_sents = clean_sents[:3]
+    
+    def fits(sents):
+        joined = " ".join(sents).strip()
+        words = len(joined.split())
+        chars = len(joined)
+        return words <= 55 and chars <= 350
+        
+    if fits(selected_sents):
+        return " ".join(selected_sents).strip()
+        
+    selected_sents = clean_sents[:2]
+    if fits(selected_sents):
+        return " ".join(selected_sents).strip()
+        
+    selected_sents = clean_sents[:1]
+    if fits(selected_sents):
+        return " ".join(selected_sents).strip()
+        
+    return _get_fallback_summary(lang)
+
+
+def _get_fallback_summary(lang: str) -> str:
+    if lang == "ur":
+        return "آپ کی فصل میں بیماری، کیڑے یا غذائی کمی کا مسئلہ ہو سکتا ہے۔ پتے غور سے دیکھیں، پانی اور کھاد کا توازن رکھیں، اور واضح تصویر بھیج کر تشخیص confirm کریں۔"
+    elif lang == "roman_urdu":
+        return "Aap ki fasal mein bemari, keera ya ghizai kami ka masla ho sakta hai. Pattay check karein, pani aur khaad ka tawazun rakhein, aur clear tasveer bhej kar diagnosis confirm karein."
+    else:
+        return "Your crop may have a disease, pest, or nutrient issue. Check the leaves carefully, manage water and fertilizer balance, and send a clear photo for confirmation."
+
+
 def generate_safe_tts_summary(farmer_response: str, language_hint: str) -> str:
     if not farmer_response:
         return ""
@@ -231,86 +289,130 @@ def generate_safe_tts_summary(farmer_response: str, language_hint: str) -> str:
     has_headings = any(key.lower() in farmer_response.lower() for key, _ in headings_list)
     
     if not has_headings:
-        # No headings: probably irrelevant refusal or fallback paragraph
-        return clean_and_shorten_section(farmer_response, 3)
+        # Refusal or fallback paragraph: Clean and get first 2 sentences, keep it brief
+        summary = clean_and_shorten_section(farmer_response, 2)
+        return enforce_short_complete_tts_summary(summary, lang)
         
     sections = extract_sections(farmer_response, lang)
-    summary_parts = []
     
-    if lang == "ur":
-        expected_headings = [
-            ("ممکنہ مسئلہ", "ممکنہ مسئلہ:", 1),
-            ("خطرے کی سطح", "خطرے کی سطح:", 1),
-            ("تجویز کردہ عمل", "تجویز کردہ عمل:", 3),
-            ("موسم کا خیال", "موسم کا خیال:", 1),
-            ("اگلا قدم", "اگلا قدم:", 1)
-        ]
-    elif lang == "roman_urdu":
-        expected_headings = [
-            ("mumkin masla", "Mumkin Masla:", 1),
-            ("khatray ki satah", "Khatray ki Satah:", 1),
-            ("tajweez kardah amal", "Tajweez Kardah Amal:", 3),
-            ("mosam ka khayal", "Mosam ka Khayal:", 1),
-            ("agla qadam", "Agla Qadam:", 1)
-        ]
-    else: # english
-        expected_headings = [
-            ("possible issue", "Possible Issue:", 1),
-            ("risk level", "Risk Level:", 1),
-            ("recommended action", "Recommended Action:", 3),
-            ("weather note", "Weather Note:", 1),
-            ("next step", "Next Step:", 1)
-        ]
-        
-    for key, display_name, max_sents in expected_headings:
-        content = ""
+    # Identify heading keys in order
+    issue_key = "ممکنہ مسئلہ" if lang == "ur" else ("mumkin masla" if lang == "roman_urdu" else "possible issue")
+    action_key = "تجویز کردہ عمل" if lang == "ur" else ("tajweez kardah amal" if lang == "roman_urdu" else "recommended action")
+    next_key = "اگلا قدم" if lang == "ur" else ("agla qadam" if lang == "roman_urdu" else "next step")
+    
+    issue_content = ""
+    action_content = ""
+    next_content = ""
+    
+    for k, v in sections.items():
+        if k.lower() == issue_key.lower():
+            issue_content = v
+        elif k.lower() == action_key.lower():
+            action_content = v
+        elif k.lower() == next_key.lower():
+            next_content = v
+            
+    # Try soft substring matches if direct match failed
+    if not issue_content:
         for k, v in sections.items():
-            if k.lower() == key.lower():
-                content = v
-                break
+            if issue_key.lower() in k.lower() or k.lower() in issue_key.lower():
+                issue_content = v
+    if not action_content:
+        for k, v in sections.items():
+            if action_key.lower() in k.lower() or k.lower() in action_key.lower():
+                action_content = v
+    if not next_content:
+        for k, v in sections.items():
+            if next_key.lower() in k.lower() or k.lower() in next_key.lower():
+                next_content = v
+
+    # Clean and get first 1 sentence of each
+    parts = []
+    if issue_content:
+        cleaned_issue = clean_and_shorten_section(issue_content, 1)
+        if cleaned_issue:
+            parts.append(cleaned_issue)
+            
+    if action_content:
+        cleaned_action = clean_and_shorten_section(action_content, 1)
+        if cleaned_action:
+            parts.append(cleaned_action)
+            
+    if next_content:
+        cleaned_next = clean_and_shorten_section(next_content, 1)
+        if cleaned_next:
+            parts.append(cleaned_next)
+            
+    # Join into a single heading-free paragraph
+    summary = " ".join(parts).strip()
+    
+    # If we got nothing from parts, fall back to clean and shorten the whole farmer_response
+    if not summary:
+        summary = clean_and_shorten_section(farmer_response, 2)
         
-        if not content:
-            for k, v in sections.items():
-                if key.lower() in k.lower() or k.lower() in key.lower():
-                    content = v
-                    break
-                    
-        if content:
-            short_content = clean_and_shorten_section(content, max_sents)
-            if short_content:
-                summary_parts.append(f"{display_name} {short_content}")
-                
-    if not summary_parts:
-        return clean_and_shorten_section(farmer_response, 5)
-        
-    return "\n".join(summary_parts)
+    return enforce_short_complete_tts_summary(summary, lang)
 
 
 def is_too_short_or_invalid(tts_summary: str, lang: str, has_headings: bool) -> bool:
     if not tts_summary:
         return True
     
-    word_count = len(tts_summary.split())
-    if word_count < 20:
+    # Clean it up first to check real characters and words
+    cleaned = clean_tts_summary_format(tts_summary)
+    
+    word_count = len(cleaned.split())
+    char_count = len(cleaned)
+    
+    # Reject if empty or too short (less than 12 words)
+    if word_count < 12:
         return True
         
-    if has_headings:
-        headings_list = HEADINGS_MAP.get(lang, HEADINGS_MAP["ur"])
-        headings_found = sum(1 for key, _ in headings_list if key.lower() in tts_summary.lower())
-        if headings_found < 2:
+    # Reject if too long (over 55 words or 350 characters)
+    if word_count > 55 or char_count > 350:
+        return True
+        
+    # Reject if it contains JSON/backend/agent/Gemini words
+    banned_substrings = [
+        "gemini", "ai model", "backend", "agent", "json",
+        "confidence", "latency", "mock", "pipeline"
+    ]
+    cleaned_lower = cleaned.lower()
+    for banned in banned_substrings:
+        if banned in cleaned_lower:
             return True
             
+    # Reject if it contains obvious raw markdown or bullet symbols
+    if any(m in tts_summary for m in ["**", "```", "•", " - ", " * "]):
+        return True
+        
     return False
 
 
 def clean_tts_summary_format(tts_summary: str) -> str:
     if not tts_summary:
         return ""
+    # 1. Remove markdown bold, bullets, underscores
     cleaned = re.sub(r'^\s*[-*+•]\s*', '', tts_summary, flags=re.MULTILINE)
     cleaned = cleaned.replace("**", "").replace("*", "").replace("__", "").replace("_", "")
+    
+    # 2. Strip headings (case-insensitive, optionally followed by colons/spaces)
+    headings_to_remove = [
+        "ممکنہ مسئلہ", "خطرے کی سطح", "تجویز کردہ عمل", "موسم کا خیال", "اگلا قدم",
+        "mumkin masla", "khatray ki satah", "tajweez kardah amal", "mosam ka khayal", "agla qadam",
+        "possible issue", "risk level", "recommended action", "weather note", "next step"
+    ]
+    for heading in headings_to_remove:
+        pattern = re.compile(re.escape(heading) + r'\s*:?', re.IGNORECASE)
+        cleaned = pattern.sub('', cleaned)
+
+    # 3. Remove unwanted brackets, percentages, special chars
     cleaned = re.sub(r'[\(\)\[\]\{\}%]', ' ', cleaned)
-    cleaned = re.sub(r' +', ' ', cleaned)
+    cleaned = cleaned.replace("⚠", "").replace("-", "—")
+    
+    # 4. Normalize spaces
+    cleaned = re.sub(r'\s+', ' ', cleaned)
     return cleaned.strip()
+
 
 
 def get_available_gemini_models(api_key: str) -> list[str]:
@@ -579,30 +681,14 @@ def generate_gemini_farmer_response(
             "   - It must use the structured headings in the language style of the user without markdown bold (no asterisks **).\n"
             f"   - {lang_instruction}\n"
             "2. tts_summary:\n"
-            "   - This is a medium-length spoken summary for audio (around 90 to 150 words maximum).\n"
-            "   - It must summarize each major heading/section from detailed_response separately.\n"
-            "   - It should NOT compress the whole answer into only 2-3 sentences.\n"
-            "   - It must follow the same language style as the user.\n"
-            "   - It MUST use the following spoken structures based on language style:\n"
-            "     * Urdu input (Urdu script): Use Urdu script and this structure:\n"
-            "       ممکنہ مسئلہ: [one short sentence]\n"
-            "       خطرے کی سطح: [one short sentence]\n"
-            "       تجویز کردہ عمل: [two to three short action points written as simple sentences, not bullet symbols]\n"
-            "       موسم کا خیال: [one short sentence]\n"
-            "       اگلا قدم: [one short sentence]\n"
-            "     * Roman Urdu input: Use Roman Urdu and this structure:\n"
-            "       Mumkin Masla: [one short sentence]\n"
-            "       Khatray ki Satah: [one short sentence]\n"
-            "       Tajweez Kardah Amal: [two to three short action sentences]\n"
-            "       Mosam ka Khayal: [one short sentence]\n"
-            "       Agla Qadam: [one short sentence]\n"
-            "     * English input: Use English and this structure:\n"
-            "       Possible Issue: [one short sentence]\n"
-            "       Risk Level: [one short sentence]\n"
-            "       Recommended Action: [two to three short action sentences]\n"
-            "       Weather Note: [one short sentence]\n"
-            "       Next Step: [one short sentence]\n"
-            "   - It must avoid markdown, bullets, numbering, brackets, parentheses, percent signs, special characters, and technical abbreviations. Keep wording natural and spoken.\n\n"
+            "   - This is a very short spoken audio summary for WhatsApp voice reply.\n"
+            "   - It must be maximum 2–3 complete sentences and maximum 3 short lines.\n"
+            "   - Ideal length is 30–45 words. Absolute maximum is 55 words or 350 characters.\n"
+            "   - It must NOT include headings, bullets, numbering, markdown, tables, brackets, percentages, or technical formatting.\n"
+            "   - It must NOT summarize every section separately.\n"
+            "   - It should only mention: main problem, one likely cause, one or two immediate safe actions, and next step if needed.\n"
+            "   - It must be complete and natural, not cut off mid-sentence.\n"
+            "   - It must follow the same language style as the user.\n\n"
             "CRITICAL RULE FOR IRRELEVANT INPUTS (TEXT OR IMAGES):\n"
             "- If the user asks an unrelated question (politics, jokes, movies, etc.) OR if the uploaded image is completely blank, solid color, black, or not related to crops, plants, pests, farming, or agriculture (e.g., a person, a car, or a blank screen), you MUST politely refuse.\n"
             "- In this case, detailed_response must be the polite refusal paragraph, and tts_summary must be the same refusal or a slightly shorter spoken version. Do NOT add headings for irrelevant cases.\n"
@@ -741,15 +827,22 @@ def generate_gemini_farmer_response(
 
                 validated_detailed = _validate_response(detailed_response, language_hint, crop)
                 if validated_detailed:
-                    # Check if tts_summary is missing or too short
                     headings_list = HEADINGS_MAP.get(language_hint, HEADINGS_MAP["ur"])
                     has_headings = any(key.lower() in validated_detailed.lower() for key, _ in headings_list)
                     
-                    if is_too_short_or_invalid(tts_summary, language_hint, has_headings):
-                        logger.info("tts_summary is missing or too short. Generating safe summary.")
+                    cleaned_tts = clean_tts_summary_format(tts_summary)
+                    if is_too_short_or_invalid(cleaned_tts, language_hint, has_headings):
+                        logger.info("tts_summary is missing or invalid. Generating safe summary.")
                         tts_summary = generate_safe_tts_summary(validated_detailed, language_hint)
                     else:
-                        tts_summary = clean_tts_summary_format(tts_summary)
+                        tts_summary = cleaned_tts
+
+                    words_summary = len(tts_summary.split())
+                    chars_summary = len(tts_summary)
+                    preview_summary = tts_summary[:120]
+                    logger.info("tts_summary_word_count: %d", words_summary)
+                    logger.info("tts_summary_length_chars: %d", chars_summary)
+                    logger.info("tts_summary_preview_first_120_chars: %s", preview_summary)
 
                     logger.info("Gemini response accepted using model %s (%d chars detailed, %d chars summary)", model_name, len(validated_detailed), len(tts_summary))
                     working_model = model_name

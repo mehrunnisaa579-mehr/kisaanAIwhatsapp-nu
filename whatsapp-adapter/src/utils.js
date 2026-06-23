@@ -46,9 +46,28 @@ function getMessageKey(remoteJid, id) {
   return `${remoteJid}:${id}`;
 }
 
+/**
+ * Checks if a given text is a short audio confirmation/request keyword.
+ * Supporting Roman Urdu, English, and Urdu confirmation words.
+ * 
+ * @param {string} text - Message text input
+ * @returns {boolean} True if confirmation text
+ */
+function isAudioConfirmationText(text) {
+  if (!text) return false;
+  const normalized = text.toLowerCase().trim();
+  const keywords = [
+    'haan', 'han', 'yes', 'y', 'ji', 'jee', 'audio', 'sunao', 'awaaz', 'awaz', 'voice',
+    'sunayen', 'suna do', 'ہاں', 'جی', 'آواز', 'سنائیں', 'سنا دیں'
+  ];
+  return keywords.includes(normalized);
+}
+
 module.exports = {
   jidToUserId,
   extractTextMessage,
-  getMessageKey
+  getMessageKey,
+  isAudioConfirmationText
 };
+
 

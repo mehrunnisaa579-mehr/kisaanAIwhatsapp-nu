@@ -131,10 +131,70 @@ async function sendAudioToBackend({ userId, audioBuffer, filename, mimeType }) {
   }
 }
 
+/**
+ * Resolves a potentially relative URL or file path against the BACKEND_BASE_URL.
+ * 
+ * @param {string} pathOrUrl - File path or URL
+ * @returns {string|null} Resolved URL or null
+ */
+function resolveBackendUrl(pathOrUrl) {
+  if (!pathOrUrl) return null;
+  if (pathOrUrl.startsWith("http://") || pathOrUrl.startsWith("https://")) {
+    return pathOrUrl;
+  }
+  const baseUrl = process.env.BACKEND_BASE_URL || 'https://kisaanaiwhatsapp-nu.onrender.com';
+  return `${baseUrl.replace(/\/$/, '')}/${pathOrUrl.replace(/^\//, '')}`;
+}
+
+/**
+ * Downloads a binary audio payload from a backend URL.
+ * 
+ * @param {string} audioUrl - URL of the audio file to download
+ * @returns {Promise<object>} Result containing ok status, buffer, and mimeType or error
+ */
+async function downloadBackendAudio(audioUrl) {
+  try {
+    const response = await axios.get(audioUrl, {
+      responseType: 'arraybuffer',
+      timeout: 60000 // 60 seconds
+    });
+
+    let mimeType = 'audio/ogg; codecs=opus'; // Default
+    const contentType = response.headers['content-type'];
+    
+    if (contentType) {
+      mimeType = contentType;
+    } else {
+      // Infer mimeType from file extension if headers are missing
+      if (audioUrl.endsWith('.ogg')) {
+        mimeType = 'audio/ogg; codecs=opus';
+      } else if (audioUrl.endsWith('.mp3')) {
+        mimeType = 'audio/mpeg';
+      } else if (audioUrl.endsWith('.wav')) {
+        mimeType = 'audio/wav';
+      }
+    }
+
+    return {
+      ok: true,
+      buffer: Buffer.from(response.data),
+      mimeType
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      error: error.message
+    };
+  }
+}
+
 module.exports = {
   sendTextToBackend,
   sendImageToBackend,
-  sendAudioToBackend
+  sendAudioToBackend,
+  resolveBackendUrl,
+  downloadBackendAudio
 };
+
 
 
