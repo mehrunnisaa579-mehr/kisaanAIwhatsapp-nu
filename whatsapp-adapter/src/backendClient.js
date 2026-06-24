@@ -188,10 +188,53 @@ async function downloadBackendAudio(audioUrl) {
   }
 }
 
+/**
+ * Sends a location pin to the FarmAI FastAPI backend.
+ * 
+ * @param {object} params
+ * @param {string} params.userId - Phone number (JID without domain)
+ * @param {number} params.latitude - Latitude degrees
+ * @param {number} params.longitude - Longitude degrees
+ * @param {string} [params.name] - Optional name of the location
+ * @param {string} [params.address] - Optional address of the location
+ * @returns {Promise<object>} Structured response object indicating success or failure
+ */
+async function sendLocationToBackend({ userId, latitude, longitude, name, address }) {
+  const baseUrl = process.env.BACKEND_BASE_URL || 'https://kisaanaiwhatsapp-nu.onrender.com';
+  const source = process.env.SOURCE_NAME || 'whatsapp_baileys';
+
+  try {
+    const response = await axios.post(`${baseUrl}/integration/process`, {
+      user_id: userId,
+      source: source,
+      message_type: 'location',
+      text: 'Location shared',
+      latitude: latitude,
+      longitude: longitude,
+      location_name: name || '',
+      location_address: address || ''
+    }, {
+      timeout: 60000 // 60 seconds timeout
+    });
+
+    return {
+      success: true,
+      data: response.data
+    };
+  } catch (error) {
+    console.error('[WA] backend error:', error.message);
+    return {
+      success: false,
+      error: error
+    };
+  }
+}
+
 module.exports = {
   sendTextToBackend,
   sendImageToBackend,
   sendAudioToBackend,
+  sendLocationToBackend,
   resolveBackendUrl,
   downloadBackendAudio
 };

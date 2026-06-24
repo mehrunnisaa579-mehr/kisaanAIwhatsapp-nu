@@ -209,6 +209,8 @@ def format_outcome(
         language_hint = parsed_input.get("language_hint", "ur") if parsed_input else "ur"
         if language_hint in ("ur", "urdu"):
             language_hint = "ur"
+        elif language_hint in ("punjabi", "siraiki"):
+            language_hint = language_hint
         elif language_hint not in ("roman_urdu", "english"):
             language_hint = "ur"
 

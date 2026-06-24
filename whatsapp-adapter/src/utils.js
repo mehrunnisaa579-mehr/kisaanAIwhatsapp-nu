@@ -63,11 +63,27 @@ function isAudioConfirmationText(text) {
   return keywords.includes(normalized);
 }
 
+/**
+ * Validates coordinate values for latitude and longitude.
+ * 
+ * @param {any} latitude - Latitude value
+ * @param {any} longitude - Longitude value
+ * @returns {boolean} True if valid
+ */
+function isValidCoordinates(latitude, longitude) {
+  const latNum = Number(latitude);
+  const lonNum = Number(longitude);
+  return !isNaN(latNum) && !isNaN(lonNum) &&
+         latNum >= -90 && latNum <= 90 &&
+         lonNum >= -180 && lonNum <= 180;
+}
+
 module.exports = {
   jidToUserId,
   extractTextMessage,
   getMessageKey,
-  isAudioConfirmationText
+  isAudioConfirmationText,
+  isValidCoordinates
 };
 
 

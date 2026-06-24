@@ -1,9 +1,10 @@
 const { downloadMediaMessage } = require('@whiskeysockets/baileys');
-const { jidToUserId, extractTextMessage, getMessageKey, isAudioConfirmationText } = require('./utils');
+const { jidToUserId, extractTextMessage, getMessageKey, isAudioConfirmationText, isValidCoordinates } = require('./utils');
 const { 
   sendTextToBackend, 
   sendImageToBackend, 
   sendAudioToBackend, 
+  sendLocationToBackend, 
   resolveBackendUrl, 
   downloadBackendAudio 
 } = require('./backendClient');
@@ -122,13 +123,14 @@ async function handleIncomingMessage(sock, msg) {
       return;
     }
 
-    // Identify if the message contains valid text, an image, or a voice/audio note
+    // Identify if the message contains valid text, an image, a voice/audio note, or a location pin
     const isText = !!(extractTextMessage(msg.message));
     const isImage = !!(msg.message?.imageMessage);
     const isAudio = !!(msg.message?.audioMessage);
+    const isLocation = !!(msg.message?.locationMessage);
 
-    // Ignore unsupported messages (like sticker, video, document, location for now)
-    if (!isText && !isImage && !isAudio) {
+    // Ignore unsupported messages (like sticker, video, document)
+    if (!isText && !isImage && !isAudio && !isLocation) {
       return;
     }
 
@@ -263,6 +265,50 @@ async function handleIncomingMessage(sock, msg) {
       } catch (mediaErr) {
         console.error('[WA] Error downloading or processing image:', mediaErr.message);
         await sock.sendMessage(jid, { text: 'معذرت، تصویر حاصل کرنے یا جواب بنانے میں مسئلہ پیش آیا۔ دوبارہ کوشش کریں۔' });
+      }
+
+    } else if (isLocation) {
+      const locationMessage = msg.message.locationMessage;
+      const latitude = locationMessage.degreesLatitude;
+      const longitude = locationMessage.degreesLongitude;
+      const name = locationMessage.name || "";
+      const address = locationMessage.address || "";
+
+      // Validate coordinates
+      const latNum = Number(latitude);
+      const lonNum = Number(longitude);
+
+      if (!isValidCoordinates(latNum, lonNum)) {
+        await sock.sendMessage(jid, { text: 'Location samajh nahi aa saki. Barah-e-karam WhatsApp location pin dobara bhejein.' });
+        return;
+      }
+
+      console.log(`[WA] location message received ${msg.key.id}`);
+
+      const result = await sendLocationToBackend({
+        userId,
+        latitude: latNum,
+        longitude: lonNum,
+        name,
+        address
+      });
+
+      if (!result.success) {
+        let fallbackText = 'FarmAI backend abhi available nahi hai. Thori der baad dobara try karein.';
+        if (result.error && (result.error.code === 'ECONNABORTED' || result.error.message.includes('timeout'))) {
+          fallbackText = 'Location process karne mein zyada waqt lag raha hai. Thori der baad dobara try karein.';
+        }
+        await sock.sendMessage(jid, { text: fallbackText });
+        return;
+      }
+
+      console.log('[WA] backend response received');
+
+      const responseData = result.data;
+      if (responseData && responseData.status === 'success' && responseData.farmer_response) {
+        await sock.sendMessage(jid, { text: responseData.farmer_response });
+      } else {
+        await sock.sendMessage(jid, { text: 'Location save ho gayi hai. Ab aap mandi rate, spray, pani, ya weather ka sawal pooch sakte hain.' });
       }
 
     } else {

@@ -12,6 +12,7 @@ from pydantic import BaseModel
 from typing import Optional
 
 from services.farmai_core import process_farmai_query
+from utils.helpers import detect_punjabi_siraiki_from_text
 
 logger = logging.getLogger(__name__)
 
@@ -132,6 +133,8 @@ async def integration_process_upload(
     """
     try:
         has_audio = audio is not None and getattr(audio, "filename", "") != ""
+        has_image = image is not None and getattr(image, "filename", "") != ""
+        logger.info("[LANG_TRACE] upload message_type=%s has_audio=%s has_image=%s", message_type, str(has_audio).lower(), str(has_image).lower())
 
         if has_audio:
             logger.info("[VOICE DEBUG] Endpoint /integration/process-upload called")
@@ -227,6 +230,7 @@ async def integration_process_upload(
                 
             transcript = stt_result.get("transcript", "")
             detected_lang = stt_result.get("language_hint", "ur")
+            logger.info("[LANG_TRACE] stt_transcript_preview=%s", (transcript[:120] if transcript else ""))
             logger.info("[VOICE DEBUG] STT success: True")
             logger.info(f"[VOICE DEBUG] Transcript length: {len(transcript)}")
             
@@ -388,39 +392,43 @@ async def integration_process_upload(
             language_detection_source = "stt_fallback"
             language_detection_marker_type = "none"
 
-            if form_hint_clean:
-                # 1. Explicit language_hint always wins
+            if form_hint_clean in ("punjabi", "pa", "panjabi"):
+                input_voice_language = "punjabi"
                 language_detection_source = "explicit_hint"
-                if form_hint_clean in ("punjabi", "pa", "panjabi"):
-                    input_voice_language = "punjabi"
-                elif form_hint_clean in ("siraiki", "seraiki", "saraiki", "skr", "saraki"):
-                    input_voice_language = "siraiki"
-                elif form_hint_clean in ("urdu", "ur"):
-                    input_voice_language = "urdu"
-                elif form_hint_clean in ("roman_urdu", "roman-urdu", "roman urdu"):
-                    input_voice_language = "roman_urdu"
-                elif form_hint_clean in ("english", "en"):
-                    input_voice_language = "english"
-                else:
-                    input_voice_language = form_hint_clean
+            elif form_hint_clean in ("siraiki", "seraiki", "saraiki", "skr", "saraki"):
+                input_voice_language = "siraiki"
+                language_detection_source = "explicit_hint"
             else:
-                # 2. No language_hint: auto-detect Punjabi/Siraiki from transcript markers
-                detected_voice_lang = detect_voice_upload_language(transcript, None)
-
-                if detected_voice_lang in ("punjabi", "siraiki"):
-                    input_voice_language = detected_voice_lang
-                    language_detection_source = "shahmukhi_marker"
-                    language_detection_marker_type = detected_voice_lang
+                # Use our new detect_punjabi_siraiki_from_text helper to check transcript
+                override_lang = detect_punjabi_siraiki_from_text(transcript, form_hint_clean)
+                if override_lang:
+                    input_voice_language = override_lang
+                    language_detection_source = "regional_override"
                 else:
-                    language_detection_source = "stt_fallback"
-                    if detected_lang in ("ur", "urdu"):
-                        input_voice_language = "urdu"
-                    elif detected_lang in ("en", "english"):
-                        input_voice_language = "english"
-                    elif detected_lang:
-                        input_voice_language = detected_lang
+                    # Fallback to existing logic
+                    if form_hint_clean:
+                        language_detection_source = "explicit_hint"
+                        if form_hint_clean in ("urdu", "ur"):
+                            input_voice_language = "urdu"
+                        elif form_hint_clean in ("roman_urdu", "roman-urdu", "roman urdu"):
+                            input_voice_language = "roman_urdu"
+                        elif form_hint_clean in ("english", "en"):
+                            input_voice_language = "english"
+                        else:
+                            input_voice_language = form_hint_clean
                     else:
-                        input_voice_language = "urdu"
+                        language_detection_source = "stt_fallback"
+                        if detected_lang in ("ur", "urdu"):
+                            input_voice_language = "urdu"
+                        elif detected_lang in ("en", "english"):
+                            input_voice_language = "english"
+                        elif detected_lang:
+                            input_voice_language = detected_lang
+                        else:
+                            input_voice_language = "urdu"
+
+            logger.info("[LANG_TRACE] detected_language=%s", input_voice_language)
+            logger.info("[LANG_TRACE] final_language_hint=%s", input_voice_language)
 
             # Step 4 - Ask FarmAI to answer in Punjabi/Siraiki without polluting transcript
             pipeline_text = transcript
@@ -494,6 +502,7 @@ async def integration_process_upload(
                     logger.info("[COMBINED DEBUG] combined fallback used")
 
             # Send transcript to existing FarmAI core
+            logger.info("[LANG_TRACE] core_language_hint=%s", input_voice_language)
             logger.info("[VOICE DEBUG] FarmAI process started")
             base_url = str(request.base_url).rstrip('/')
             
@@ -514,6 +523,7 @@ async def integration_process_upload(
                         image_path=image_path_for_core,
                         audio_path=f"static/uploads/audio/{safe_audio_filename}",
                         base_url=base_url,
+                        language_hint=input_voice_language,
                     )
                     farmai_success = farmai_result.get("status") == "success"
                     if farmai_success:
@@ -544,6 +554,7 @@ async def integration_process_upload(
                         image_path=None,
                         audio_path=f"static/uploads/audio/{safe_audio_filename}",
                         base_url=base_url,
+                        language_hint=input_voice_language,
                     )
                     farmai_success = farmai_result.get("status") == "success"
                     logger.info(f"[VOICE DEBUG] FarmAI process success: {farmai_success}")
@@ -679,6 +690,7 @@ async def integration_process_upload(
 
             tts_voice_used = voice_override if voice_override else "default"
 
+            logger.info("[LANG_TRACE] tts_language=%s tts_summary_preview=%s", tts_language_hint, (tts_text[:120] if tts_text else ""))
             logger.info("[VOICE DEBUG] TTS started")
             from services.tts_service import generate_tts_audio
             
@@ -800,6 +812,11 @@ async def integration_process_upload(
                     "image_used": False
                 })
             
+            if farmai_result.get("farmer_response"):
+                from utils.helpers import append_audio_offer_line
+                final_lang = input_voice_language or tts_language_hint or detected_lang or "ur"
+                farmai_result["farmer_response"] = append_audio_offer_line(farmai_result["farmer_response"], final_lang)
+            
             if tts_success:
                 return {
                     "status": "success",
@@ -894,6 +911,7 @@ async def integration_process_upload(
             image_path=image_path_to_pass,
             audio_path=None,
             base_url=base_url,
+            language_hint=language_hint,
         )
 
         if image_processed and result.get("status") == "success":

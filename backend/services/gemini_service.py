@@ -101,6 +101,18 @@ def _validate_response(text: str, language_hint: str = "ur", crop: str = "Unknow
                     logger.warning("Validation failed: missing required Urdu heading '%s'", heading)
                     return None
 
+    elif lang in ("punjabi", "siraiki"):
+        # should contain Urdu/Arabic script
+        urdu_char_count = sum(1 for ch in text if "\u0600" <= ch <= "\u06FF")
+        min_urdu_chars = 15 if is_refusal_or_inquiry else 40
+        if urdu_char_count < min_urdu_chars:
+            logger.warning("Validation failed: too few regional script characters (%d)", urdu_char_count)
+            return None
+        # should not be mostly English
+        if _is_mostly_english(text):
+            logger.warning("Validation failed: mostly English in regional response")
+            return None
+
     elif lang == "roman_urdu":
         # should be Latin script, should not contain mostly Urdu script
         urdu_char_count = sum(1 for ch in text if "\u0600" <= ch <= "\u06FF")
@@ -271,6 +283,10 @@ def _get_fallback_summary(lang: str) -> str:
         return "آپ کی فصل میں بیماری، کیڑے یا غذائی کمی کا مسئلہ ہو سکتا ہے۔ پتے غور سے دیکھیں، پانی اور کھاد کا توازن رکھیں، اور واضح تصویر بھیج کر تشخیص confirm کریں۔"
     elif lang == "roman_urdu":
         return "Aap ki fasal mein bemari, keera ya ghizai kami ka masla ho sakta hai. Pattay check karein, pani aur khaad ka tawazun rakhein, aur clear tasveer bhej kar diagnosis confirm karein."
+    elif lang in ("punjabi", "pa", "panjabi"):
+        return "تہاڈی فصل وچ بیماری، کیڑے یا خوراک دی کمی دا مسئلہ ہو سکدا اے۔ پتے دھیان نال دیکھو، پانی تے کھاد دا حساب ٹھیک رکھو، تے صاف تصویر بھیج کے پکا کرو۔"
+    elif lang in ("siraiki", "seraiki", "saraiki", "skr", "saraki"):
+        return "تہاڈی فصل وچ بیماری، کیڑے یا خوراک دی کمی دا مسئلہ تھی سکدا اے۔ پترے دھیان نال ڈیکھو، پانی تے کھاد دا توازن رکھو، تے صاف تصویر بھیج کے پکا کرو۔"
     else:
         return "Your crop may have a disease, pest, or nutrient issue. Check the leaves carefully, manage water and fertilizer balance, and send a clear photo for confirmation."
 
@@ -282,6 +298,8 @@ def generate_safe_tts_summary(farmer_response: str, language_hint: str) -> str:
     lang = (language_hint or "ur").strip().lower()
     if lang in ("urdu", "unknown"):
         lang = "ur"
+    elif lang in ("punjabi", "siraiki"):
+        lang = lang
     elif lang not in ("roman_urdu", "english"):
         lang = "ur"
         
@@ -631,11 +649,18 @@ def generate_gemini_farmer_response(
             context_block = context_block + "\n\n" + rag_context
 
         # ── 4. System prompt ────────────────────────────────────────────────
-        language_hint = parsed_input.get("language_hint", "ur") if parsed_input else "ur"
+        gemini_received = parsed_input.get("language_hint", "ur") if parsed_input else "ur"
+        logger.info("[LANG_TRACE] gemini_received_language_hint=%s", gemini_received)
+
+        language_hint = gemini_received
         if language_hint in ("ur", "urdu"):
             language_hint = "ur"
+        elif language_hint in ("punjabi", "siraiki"):
+            language_hint = language_hint
         elif language_hint not in ("roman_urdu", "english"):
             language_hint = "ur"
+
+        logger.info("[LANG_TRACE] gemini_final_language_hint=%s", language_hint)
 
         if language_hint == "roman_urdu":
             lang_instruction = (
@@ -656,6 +681,28 @@ def generate_gemini_farmer_response(
                 "Recommended Action:\n"
                 "Weather Note:\n"
                 "Next Step:"
+            )
+        elif language_hint == "punjabi":
+            lang_instruction = (
+                "The user has written in Punjabi. You MUST reply ONLY in Pakistani Punjabi language using Shahmukhi/Urdu script where possible. Do NOT convert to standard Urdu. Do NOT use Latin/English characters (except for numbers). Keep farming terms simple and use Punjabi vocabulary naturally.\n"
+                "Use these exact headings without any markdown bold formatting:\n"
+                "ممکنہ مسئلہ:\n"
+                "خطرے کی سطح:\n"
+                "تجویز کردہ عمل:\n"
+                "موسم کا خیال:\n"
+                "اگلا قدم:\n\n"
+                "Make sure detailed_response is written in natural Punjabi (Pakistani Shahmukhi script) and tts_summary is a short, complete spoken Punjabi advisory."
+            )
+        elif language_hint == "siraiki":
+            lang_instruction = (
+                "The user has written in Siraiki. You MUST reply ONLY in Pakistani Siraiki language using Shahmukhi/Urdu script where possible. Do NOT convert to standard Urdu. Do NOT use Latin/English characters (except for numbers). Keep farming terms simple and use Siraiki vocabulary naturally.\n"
+                "Use these exact headings without any markdown bold formatting:\n"
+                "ممکنہ مسئلہ:\n"
+                "خطرے کی سطح:\n"
+                "تجویز کردہ عمل:\n"
+                "موسم کا خیال:\n"
+                "اگلا قدم:\n\n"
+                "Make sure detailed_response is written in natural Siraiki (Pakistani Shahmukhi script) and tts_summary is a short, complete spoken Siraiki advisory."
             )
         else: # ur
             lang_instruction = (

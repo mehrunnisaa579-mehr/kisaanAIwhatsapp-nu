@@ -4,8 +4,11 @@ Parses and normalises raw user input (text, image flag, location, crop).
 """
 
 import time
+import logging
 from utils.helpers import detect_language, infer_crop
 from services.logging_service import create_log, measure_latency_ms
+
+logger = logging.getLogger(__name__)
 
 
 def parse_input(
@@ -14,6 +17,7 @@ def parse_input(
     latitude: float = None,
     longitude: float = None,
     image=None,
+    language_hint: str = None,
 ) -> dict:
     """
     Parse raw input and return a structured representation.
@@ -28,6 +32,8 @@ def parse_input(
         GPS coordinates if available.
     image : UploadFile | None
         Image attachment if any.
+    language_hint : str | None
+        Explicit language hint from caller.
 
     Returns
     -------
@@ -39,7 +45,13 @@ def parse_input(
     has_image = image is not None and getattr(image, "filename", "") != ""
     has_location = latitude is not None and longitude is not None
 
-    language_hint = detect_language(text)
+    if language_hint:
+        language_hint = language_hint.strip().lower()
+        if language_hint in ("", "none", "null", "undefined"):
+            language_hint = None
+
+    if not language_hint:
+        language_hint = detect_language(text)
     detected_crop = infer_crop(text, crop)
 
     # Build a normalised query string
@@ -71,6 +83,8 @@ def parse_input(
         confidence=confidence,
         latency_ms=latency,
     )
+
+    logger.info("[LANG_TRACE] parsed_language_hint=%s", language_hint)
 
     return {
         "crop": detected_crop,

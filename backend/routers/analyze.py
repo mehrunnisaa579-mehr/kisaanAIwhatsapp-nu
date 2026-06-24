@@ -74,6 +74,49 @@ async def analyze_crop(
 
         parsed["image_bytes"] = image_bytes
         parsed["image_mime"] = image_mime
+        
+        # Check for weather action query
+        from utils.helpers import handle_weather_action_query, append_audio_offer_line
+        try:
+            has_image = image is not None and getattr(image, "filename", "") != ""
+            if not has_image:
+                language_hint = parsed.get("language_hint", "ur")
+                res_tuple = handle_weather_action_query(text, latitude, longitude, language_hint)
+                if res_tuple:
+                    advice_msg, tts_sum = res_tuple
+                    return {
+                        "status": "success",
+                        "tts_summary": tts_sum,
+                        "input_summary": {
+                            "text": text,
+                            "crop": crop,
+                            "image_received": image is not None and getattr(image, "filename", "") != "",
+                            "location_received": latitude is not None and longitude is not None,
+                            "language_hint": language_hint,
+                        },
+                        "diagnosis": {},
+                        "farmer_response": append_audio_offer_line(advice_msg, language_hint),
+                        "action_chain": [],
+                        "agent_logs": [],
+                        "before_after": {},
+                        "weather": {},
+                        "irrigation_advice": {"heading": "پانی کا مشورہ", "message": "", "based_on": "weather"},
+                        "cost_summary": {},
+                        "contradictions": [],
+                        "recovery": {"status": "stable", "actions": []},
+                        "gemini_status": {
+                            "used": False,
+                            "success": True,
+                            "error_type": None,
+                            "model_used": None,
+                            "available_models": [],
+                            "tested_models": [],
+                            "working_model": None
+                        },
+                    }
+        except Exception as e:
+            logger.warning("[WEATHER_ACTION] analyze.py weather action check failed: %s", type(e).__name__)
+
         dt_parse = (time.perf_counter() - t_parse_start) * 1000
         logger.info(f"[Timing] input_parser: {dt_parse:.1f}ms")
 
@@ -110,6 +153,8 @@ async def analyze_crop(
         # Safety: ensure farmer_response is never empty
         farmer_response = outcome.get("farmer_response") or _FALLBACK_FARMER_RESPONSE
         language_hint = parsed.get("language_hint", "ur")
+        from utils.helpers import append_audio_offer_line
+        farmer_response = append_audio_offer_line(farmer_response, language_hint)
         tts_summary = outcome.get("tts_summary") or generate_safe_tts_summary(farmer_response, language_hint)
 
         # Build final response — preserves frontend-compatible top-level keys
