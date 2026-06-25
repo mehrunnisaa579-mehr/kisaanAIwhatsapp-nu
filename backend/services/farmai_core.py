@@ -142,7 +142,7 @@ async def _process_farmai_query_impl(
             # Generate audio response using the existing TTS service
             logger.info("[LANG_TRACE] tts_language=%s tts_summary_preview=%s", last_lang, (trimmed_summary[:120] if trimmed_summary else ""))
             from services.tts_service import generate_tts_audio
-            tts_res = generate_tts_audio(trimmed_summary, last_lang)
+            tts_res = generate_tts_audio(trimmed_summary, last_lang, source="yes_confirmation")
             tts_success = tts_res.get("success", False)
             print(f"[Debug Log] generate_tts_audio returned success: {tts_success}")
 

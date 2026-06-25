@@ -36,7 +36,7 @@ async def text_to_speech(payload: TTSRequest, request: Request):
     logger.info("Handling /tts request: text_len=%d, lang_hint=%s", len(text) if text else 0, lang_hint)
     
     # Generate audio using TTS service
-    result = generate_tts_audio(text, lang_hint)
+    result = generate_tts_audio(text, lang_hint, source="standalone_tts")
     
     if not result.get("success"):
         return {

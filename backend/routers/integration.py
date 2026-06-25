@@ -674,30 +674,23 @@ async def integration_process_upload(
             if tts_text and len(tts_text) > 300 and not farmai_result.get("tts_summary"):
                 tts_text = tts_text[:300].strip() + "..."
                 
-            # Step 5 - Generate TTS with Orus only for Punjabi/Siraiki voice uploads
-            if input_voice_language == "punjabi":
-                tts_language_hint = "punjabi"
-                voice_override = "Orus"
-                punjabi_siraiki_voice_mode = True
-            elif input_voice_language == "siraiki":
-                tts_language_hint = "siraiki"
-                voice_override = "Orus"
-                punjabi_siraiki_voice_mode = True
+            # Step 5 - Generate TTS for Punjabi/Siraiki and other languages
+            if input_voice_language in ("punjabi", "siraiki"):
+                tts_language_hint = input_voice_language
+                voice_override = None
+                punjabi_siraiki_voice_mode = False
             else:
                 tts_language_hint = language_hint or detected_lang
                 voice_override = None
                 punjabi_siraiki_voice_mode = False
 
-            tts_voice_used = voice_override if voice_override else "default"
+            tts_voice_used = "default"
 
             logger.info("[LANG_TRACE] tts_language=%s tts_summary_preview=%s", tts_language_hint, (tts_text[:120] if tts_text else ""))
             logger.info("[VOICE DEBUG] TTS started")
             from services.tts_service import generate_tts_audio
             
-            if punjabi_siraiki_voice_mode:
-                tts_result = generate_tts_audio(tts_text, tts_language_hint, voice_override=voice_override)
-            else:
-                tts_result = generate_tts_audio(tts_text, tts_language_hint)
+            tts_result = generate_tts_audio(tts_text, tts_language_hint, source="voice_auto")
                 
             tts_success = tts_result.get("success", False)
             logger.info(f"[VOICE DEBUG] TTS success: {tts_success}")

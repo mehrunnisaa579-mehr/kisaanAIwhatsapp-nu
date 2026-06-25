@@ -229,7 +229,7 @@ async def voice_analyze(
             }
 
         # 4. Generate TTS Audio for voice response
-        tts_res = generate_tts_audio(tts_summary, parsed.get("language_hint"))
+        tts_res = generate_tts_audio(tts_summary, parsed.get("language_hint"), source="docs_upload")
         audio_url = None
         tts_success = False
         tts_error_type = None
